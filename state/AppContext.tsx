@@ -83,9 +83,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const apiState = await api.fetchState();
       
       if (apiState) {
+         // If server has no menu items (fresh instance), fallback to constants
+         let menuItems = apiState.menuItems;
+         if (!menuItems || menuItems.length === 0) {
+             menuItems = MENU_ITEMS;
+         }
+
          dispatch({
           type: 'INITIALIZE_STATE',
-          payload: { ...apiState, isLoading: false },
+          payload: { ...apiState, menuItems, isLoading: false },
         });
       } else {
         // 2. Fallback to LocalStorage
