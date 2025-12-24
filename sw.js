@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'floyds-restaurant-v2';
+const CACHE_NAME = 'floyds-restaurant-v3';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
@@ -20,9 +20,18 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Network Only for API requests to ensure fresh data
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // Stale-while-revalidate for other requests
   event.respondWith(
     caches.match(event.request)
       .then(response => {
+        // Cache hit - return response
         if (response) {
           return response;
         }
@@ -31,17 +40,21 @@ self.addEventListener('fetch', event => {
 
         return fetch(fetchRequest).then(
           response => {
+            // Check if we received a valid response
             if (!response || response.status !== 200 || (response.type !== 'basic' && response.type !== 'cors')) {
               return response;
+            }
+
+            // Don't cache if not GET
+            if (event.request.method !== 'GET') {
+                return response;
             }
 
             const responseToCache = response.clone();
 
             caches.open(CACHE_NAME)
               .then(cache => {
-                if (event.request.method === 'GET') {
-                    cache.put(event.request, responseToCache);
-                }
+                cache.put(event.request, responseToCache);
               });
 
             return response;

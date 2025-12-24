@@ -31,8 +31,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env, params } = context;
   const url = new URL(request.url);
   
-  // params.route is an array because of the [[route]] filename
-  // e.g. /api/state -> ['state']
+  // CORS Headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  // Handle preflight requests
+  if (request.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   const path = params.route; 
   const route = Array.isArray(path) ? path[0] : path;
 
@@ -40,17 +50,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const jsonResponse = (data: any, status = 200) => 
     new Response(JSON.stringify(data), {
       status,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        ...corsHeaders,
+        'Content-Type': 'application/json' 
+      }
     });
 
   try {
     // 1. GET /api/state
     if (request.method === "GET" && route === "state") {
       const state = await env.FLOYDS_DATA.get("full_state");
-      // Return empty structure if nothing exists yet
-      return new Response(state || JSON.stringify({ transactions: [], menuItems: [] }), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return jsonResponse(state ? JSON.parse(state) : { transactions: [], menuItems: [] });
     }
 
     // 2. POST /api/transactions
@@ -80,10 +90,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       return jsonResponse({ success: true });
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response("Not Found", { status: 404, headers: corsHeaders });
 
   } catch (err) {
-    // If KV is not bound or other errors
     return jsonResponse({ error: "Backend Error", details: String(err) }, 500);
   }
 };
