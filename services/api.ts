@@ -1,27 +1,25 @@
 
 import { AppState, MenuItem, Transaction } from '../types';
 
-// Replace this with your actual Cloudflare Worker URL
-const API_BASE_URL = 'https://floyds-api.your-worker.workers.dev';
-
-// Helper to determine if we have a valid backend URL configured
-const hasBackend = () => API_BASE_URL && !API_BASE_URL.includes('your-worker');
+// We default to '/api' so it works automatically with Cloudflare Pages Functions
+// Safely access VITE_API_URL using optional chaining to prevent crashes if env is undefined
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api';
 
 export const api = {
   async fetchState(): Promise<Partial<AppState> | null> {
-    if (!hasBackend()) return null;
     try {
       const response = await fetch(`${API_BASE_URL}/state`);
       if (!response.ok) throw new Error('Failed to fetch state');
       return await response.json();
     } catch (error) {
-      console.error('API Error:', error);
+      // It is normal to fail on local dev without the backend running
+      // The AppContext will handle the fallback to localStorage
+      console.log('API not available, using local storage.');
       return null;
     }
   },
 
   async syncTransaction(transaction: Transaction): Promise<boolean> {
-    if (!hasBackend()) return false;
     try {
       await fetch(`${API_BASE_URL}/transactions`, {
         method: 'POST',
@@ -30,13 +28,12 @@ export const api = {
       });
       return true;
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('API Sync Error:', error);
       return false;
     }
   },
 
   async syncMenu(menuItems: MenuItem[]): Promise<boolean> {
-    if (!hasBackend()) return false;
     try {
       await fetch(`${API_BASE_URL}/menu`, {
         method: 'POST', // or PUT
@@ -45,7 +42,7 @@ export const api = {
       });
       return true;
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('API Sync Error:', error);
       return false;
     }
   }

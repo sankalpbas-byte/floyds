@@ -1,3 +1,4 @@
+
 import React, { useState, useContext, useMemo } from 'react';
 import { AppContext } from '../../state/AppContext';
 import { Transaction, OrderStatus, MenuItem } from '../../types';
@@ -145,7 +146,7 @@ export const AdminView: React.FC = () => {
 
   const handleMenuSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (menuForm.name && menuForm.price) {
+    if (menuForm.name && menuForm.price !== undefined) {
       if (editingItem) {
         editMenuItem({ ...editingItem, ...menuForm } as MenuItem);
       } else {
@@ -604,8 +605,11 @@ export const AdminView: React.FC = () => {
                                 <input 
                                     type="number"
                                     required
-                                    value={menuForm.price}
-                                    onChange={e => setMenuForm({...menuForm, price: parseFloat(e.target.value)})}
+                                    value={menuForm.price || ''}
+                                    onChange={e => {
+                                      const val = parseFloat(e.target.value);
+                                      setMenuForm({...menuForm, price: isNaN(val) ? 0 : val});
+                                    }}
                                     className="w-full bg-neutral-900 border border-white/10 rounded-xl p-3 text-white focus:ring-1 focus:ring-green-500/50 focus:outline-none"
                                 />
                             </div>
@@ -665,5 +669,3 @@ export const AdminView: React.FC = () => {
     </div>
   );
 };
-
-export default AdminView;
