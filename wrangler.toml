@@ -1,0 +1,5 @@
+{
+  "name": "worker",
+	    "compatibility_date": "2025-12-25",
+	    "main": "/index.js"
+	  }
