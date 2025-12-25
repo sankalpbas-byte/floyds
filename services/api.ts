@@ -33,7 +33,8 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(transaction),
       });
-      return response.ok;
+      if (!response.ok) throw new Error('Transaction sync failed');
+      return true;
     } catch (error) {
       console.error('D1 sync error:', error);
       return false;
@@ -50,7 +51,8 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(menuItems),
       });
-      return response.ok;
+      if (!response.ok) throw new Error('Menu sync failed');
+      return true;
     } catch (error) {
       console.error('D1 menu sync error:', error);
       return false;

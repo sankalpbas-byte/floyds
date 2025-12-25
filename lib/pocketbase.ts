@@ -1,10 +1,10 @@
+// DEPRECATED: We are now using Cloudflare D1 via functions/api
+// Keeping for backward compatibility reference during migration
 import PocketBase from 'pocketbase';
 
-// Replace with your actual PocketBase URL
 const PB_URL = 'https://floyds-restaurant.pockethost.io';
 export const pb = new PocketBase(PB_URL);
 
-// Simple helper to check if we are connected (can be used in AppContext)
 export const isPocketBaseActive = async () => {
     try {
         await pb.health.check();

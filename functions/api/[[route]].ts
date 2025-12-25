@@ -1,22 +1,18 @@
+// Cloudflare Pages Function for API routes
+// This handles all requests starting with /api/
 
-// Fix: Define local types for Cloudflare environment to resolve missing global type errors
-type D1Database = any;
-type PagesFunction<T = any> = (context: any) => Response | Promise<Response>;
+type Env = {
+  DB: any; // D1Database binding
+};
 
-interface Env {
-  // Fix: Use any for D1Database to resolve "Cannot find name 'D1Database'"
-  DB: D1Database;
-}
-
-// Fix: Use any for PagesFunction to resolve "Cannot find name 'PagesFunction'"
-export const onRequest: PagesFunction<Env> = async (context) => {
+export const onRequest: any = async (context: any) => {
   const { request, env } = context;
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
 
   if (!env.DB) {
-    return new Response(JSON.stringify({ error: "D1 Database binding 'DB' not found." }), { 
+    return new Response(JSON.stringify({ error: "D1 Database binding 'DB' not found. Please ensure your Pages project has a D1 database bound to 'DB' in the Cloudflare dashboard." }), { 
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
@@ -24,6 +20,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   try {
     // 1. GET State (Initial Load)
+    // Path: /api/state?phone=...
     if (path === '/api/state' && method === 'GET') {
       const phone = url.searchParams.get('phone');
       
@@ -53,13 +50,16 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         }
       }).filter(Boolean);
 
-      return Response.json({
+      return new Response(JSON.stringify({
         menuItems: menuResults.results || [],
         transactions: parsedTransactions
+      }), {
+        headers: { "Content-Type": "application/json" }
       });
     }
 
     // 2. POST Sync Transaction
+    // Path: /api/sync/transaction
     if (path === '/api/sync/transaction' && method === 'POST') {
       const data = await request.json();
       const id = data.id || crypto.randomUUID();
@@ -72,10 +72,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         "INSERT OR REPLACE INTO transactions (id, type, userPhone, payload, createdAt) VALUES (?, ?, ?, ?, ?)"
       ).bind(id, type, userPhone, payload, createdAt).run();
 
-      return Response.json({ success: true });
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     // 3. POST Sync Menu
+    // Path: /api/sync/menu
     if (path === '/api/sync/menu' && method === 'POST') {
       const items = await request.json();
       const statements = items.map((item: any) => {
@@ -85,7 +88,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       });
 
       await env.DB.batch(statements);
-      return Response.json({ success: true });
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     return new Response(JSON.stringify({ error: "Endpoint not found" }), { 
