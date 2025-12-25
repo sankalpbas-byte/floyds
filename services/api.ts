@@ -2,22 +2,29 @@ import { AppState, MenuItem, Transaction } from '../types';
 
 export const api = {
   /**
-   * Fetches persistent state from Cloudflare D1
+   * Fetches persistent state from Cloudflare D1 via Pages Functions
    */
   async fetchState(phone?: string | null): Promise<Partial<AppState> | null> {
     try {
-      const url = phone ? `/api/state?phone=${encodeURIComponent(phone)}` : '/api/state';
-      const response = await fetch(url);
+      const url = new URL('/api/state', window.location.origin);
+      if (phone) url.searchParams.append('phone', phone);
+
+      const response = await fetch(url.toString());
       if (!response.ok) throw new Error('Failed to fetch state');
-      return await response.json();
+      
+      const data = await response.json();
+      return {
+        menuItems: data.menuItems || [],
+        transactions: data.transactions || [],
+      };
     } catch (error) {
-      console.error('API Error (fetchState):', error);
+      console.warn('D1 fetch error (falling back to local):', error);
       return null;
     }
   },
 
   /**
-   * Persists a single transaction (order, load, etc.) to D1
+   * Persists a single transaction to D1
    */
   async syncTransaction(transaction: Transaction): Promise<boolean> {
     try {
@@ -28,13 +35,13 @@ export const api = {
       });
       return response.ok;
     } catch (error) {
-      console.error('API Error (syncTransaction):', error);
+      console.error('D1 sync error:', error);
       return false;
     }
   },
 
   /**
-   * Persists the entire menu to D1 (Admin only)
+   * Syncs menu changes to D1 (Admin only)
    */
   async syncMenu(menuItems: MenuItem[]): Promise<boolean> {
     try {
@@ -45,7 +52,7 @@ export const api = {
       });
       return response.ok;
     } catch (error) {
-      console.error('API Error (syncMenu):', error);
+      console.error('D1 menu sync error:', error);
       return false;
     }
   }

@@ -77,12 +77,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const initialize = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      // 1. Get initial phone from LocalStorage to fetch correct D1 state
       const savedRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
       const localState = savedRaw ? JSON.parse(savedRaw) : {};
       const phone = localState.phone;
 
-      // 2. Fetch from Cloudflare D1
       const apiState = await api.fetchState(phone);
       
       if (apiState) {
@@ -101,7 +99,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           },
         });
       } else {
-        // Fallback to LocalStorage only
         const initialMenuItems = localState.menuItems && localState.menuItems.length > 0 
           ? localState.menuItems 
           : MENU_ITEMS;

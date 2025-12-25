@@ -1,16 +1,22 @@
+
+// Fix: Define local types for Cloudflare environment to resolve missing global type errors
+type D1Database = any;
+type PagesFunction<T = any> = (context: any) => Response | Promise<Response>;
+
 interface Env {
-  DB: any; // Cloudflare D1 Database binding
+  // Fix: Use any for D1Database to resolve "Cannot find name 'D1Database'"
+  DB: D1Database;
 }
 
-export const onRequest: any = async (context: any) => {
+// Fix: Use any for PagesFunction to resolve "Cannot find name 'PagesFunction'"
+export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
 
-  // Ensure DB binding exists
   if (!env.DB) {
-    return new Response(JSON.stringify({ error: "D1 Database binding 'DB' not found. Please check your Cloudflare Pages configuration." }), { 
+    return new Response(JSON.stringify({ error: "D1 Database binding 'DB' not found." }), { 
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
@@ -21,26 +27,24 @@ export const onRequest: any = async (context: any) => {
     if (path === '/api/state' && method === 'GET') {
       const phone = url.searchParams.get('phone');
       
-      // Fetch menu items
       const menuResults = await env.DB.prepare("SELECT * FROM menu_items").all();
       
-      // Fetch transactions
       let txResults;
       if (phone) {
         txResults = await env.DB.prepare(
-          "SELECT * FROM transactions WHERE userPhone = ? OR userPhone IS NULL ORDER BY createdAt DESC LIMIT 50"
+          "SELECT * FROM transactions WHERE userPhone = ? OR userPhone IS NULL ORDER BY createdAt DESC LIMIT 100"
         ).bind(phone).all();
       } else {
         txResults = await env.DB.prepare(
-          "SELECT * FROM transactions ORDER BY createdAt DESC LIMIT 50"
+          "SELECT * FROM transactions ORDER BY createdAt DESC LIMIT 100"
         ).all();
       }
 
-      // Parse JSON payloads safely
       const parsedTransactions = (txResults.results || []).map((tx: any) => {
         try {
+          const data = JSON.parse(tx.payload);
           return {
-            ...JSON.parse(tx.payload),
+            ...data,
             id: tx.id,
             created: tx.createdAt
           };
@@ -71,12 +75,9 @@ export const onRequest: any = async (context: any) => {
       return Response.json({ success: true });
     }
 
-    // 3. POST Sync Menu (Admin Only)
+    // 3. POST Sync Menu
     if (path === '/api/sync/menu' && method === 'POST') {
       const items = await request.json();
-      
-      // We use a batch transaction approach for multiple items if supported, 
-      // or simple sequential runs for smaller menus.
       const statements = items.map((item: any) => {
         return env.DB.prepare(
           "INSERT OR REPLACE INTO menu_items (id, name, description, price, imageUrl, category) VALUES (?, ?, ?, ?, ?, ?)"
@@ -84,7 +85,6 @@ export const onRequest: any = async (context: any) => {
       });
 
       await env.DB.batch(statements);
-
       return Response.json({ success: true });
     }
 
