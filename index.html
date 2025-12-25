@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Floyd's Restaurant</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Order delicious food and cigarettes from Floyd's, a unique restaurant experience in the heart of Kathmandu, Nepal. Explore our menu of classics and local favorites." />
+    <meta name="keywords" content="Floyd's, restaurant, Nepal, Kathmandu, food delivery, cigarettes, pizza, pasta" />
+    <meta name="author" content="Floyd's Restaurant" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Floyd's Restaurant - Food & More in Kathmandu" />
+    <meta property="og:description" content="Discover soulful food and a curated selection of essentials at Floyd's. Order online for a unique taste of Nepal." />
+    <meta property="og:image" content="/assets/icon-512.png" /> 
+    
+    <!-- PWA and Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#050505" />
+    <link rel="apple-touch-icon" href="/assets/icon-192.png">
+
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #050505;
+        background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #050505 70%);
+        background-attachment: fixed;
+        color: #e5e5e5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+      }
+      
+      .no-scrollbar::-webkit-scrollbar {
+          display: none;
+      }
+      .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+      
+      .content-visibility-auto {
+        content-visibility: auto;
+        contain-intrinsic-size: 1px 1000px;
+      }
+
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translate3d(0, 20px, 0);
+        }
+        to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
+      }
+
+      .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "pocketbase": "https://esm.sh/pocketbase@^0.26.5",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

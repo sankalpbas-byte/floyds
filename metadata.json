@@ -1,0 +1,5 @@
+{
+  "name": "Floyd's Restaurant",
+  "description": "An application for ordering food and cigarettes from Floyd's, a restaurant based in Nepal.",
+  "requestFramePermissions": []
+}
