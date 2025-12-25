@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'floyds-restaurant-v4';
+const CACHE_NAME = 'floyds-restaurant-v8';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
